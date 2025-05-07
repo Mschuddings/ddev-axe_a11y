@@ -4,7 +4,7 @@ Run Axe accessibility checker on a URL.
 
 ## Installation
 
-ddev add-on get Mschuddings/ddev-axe_a11y
+ddev add-on get Mschuddings/ddev-axe_a11y && ddev restart
 
 ## Usage
 

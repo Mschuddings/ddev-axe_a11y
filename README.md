@@ -2,6 +2,10 @@
 
 Run Axe accessibility checker on a URL.
 
+## Installation
+
+ddev add-on get Mschuddings/ddev-axe_a11y
+
 ## Usage
 
 ddev axe_a11y https://www.example.be

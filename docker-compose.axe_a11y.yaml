@@ -1,0 +1,22 @@
+#ddev-generated
+services:
+  # This is the service name used when running ddev commands accepting the
+  # --service flag.
+  axe_a11y:
+    restart: "no"
+    command: [ "tail", "-f", "/dev/null" ]
+    # This is the name of the container. It is recommended to follow the same
+    # name convention used in the main docker-compose.yml file.
+    container_name: ddev-${DDEV_SITENAME}-axe-a11y
+    image: mschuddings/axe_a11y
+    volumes:
+      - ./axe_a11y:/home/results
+      - "ddev-global-cache:/mnt/ddev-global-cache"
+    # These labels ensure this service is discoverable by ddev.
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    external_links:
+      # the default domain
+      - ddev-router:$DDEV_HOSTNAME
+      # extra domains (multisite)

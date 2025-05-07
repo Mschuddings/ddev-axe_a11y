@@ -1,11 +1,11 @@
 #!/bin/bash
 #ddev-generated
 ## Description: Run axe_a11y checker
-## Usage: ddev axe_a11y [args]
+## Usage: axe_a11y [args]
 ## Example: "ddev axe_a11y https://www.example.be/"
 ## ExecRaw: true
 
-docker exec ddev-${DDEV_PROJECT}-axe-a11y node axe.js "$@"
+output=$(docker exec ddev-${DDEV_PROJECT}-axe-a11y node axe.js "$@")
 SUBSTRING=`echo $output | cut -d "@" -f2 | cut -d "@" -f1`
 
 case $OSTYPE in

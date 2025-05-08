@@ -20,7 +20,7 @@ ddev axe_a11y https://www.example.be https://www.example2.be https://www.example
 It is possible to pass in a *CSV* file.
 Example:
 ``
-https://www.example.be
+https://www.example.be<br>
 https://www.example2.be
 ``
 

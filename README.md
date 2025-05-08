@@ -29,8 +29,10 @@ Then via:
 ddev axe_a11y urls.csv
 ``
 
+The file must be inside of ".ddev/axe_a11y/config"
+
 It will only open one CSV though but all urls will be checked of course.
 
 ## Previous reports.
 
-All reports will be in your .ddev/axe_a11y folder.
+All reports will be in your ".ddev/axe_a11y/results" folder.

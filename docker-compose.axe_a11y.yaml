@@ -10,7 +10,8 @@ services:
     container_name: ddev-${DDEV_SITENAME}-axe-a11y
     image: mschuddings/axe_a11y
     volumes:
-      - ./axe_a11y:/home/results
+      - ./axe_a11y/results:/home/results
+      - ./axe_a11y/config:/home/config
       - "ddev-global-cache:/mnt/ddev-global-cache"
     # These labels ensure this service is discoverable by ddev.
     labels:

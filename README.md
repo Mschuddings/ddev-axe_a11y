@@ -15,6 +15,22 @@ It will open the report automatically in your browser.
 It is possible to test multiple urls via for example:
 ddev axe_a11y https://www.example.be https://www.example2.be https://www.example.be
 
+### File
+
+It is possible to pass in a *CSV* file.
+Example:
+``
+https://www.example.be
+https://www.example2.be
+``
+
+Then via:
+``
+ddev axe_a11y urls.csv
+``
+
+It will only open one CSV though but all urls will be checked of course.
+
 ## Previous reports.
 
 All reports will be in your .ddev/axe_a11y folder.

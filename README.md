@@ -18,11 +18,7 @@ ddev axe_a11y https://www.example.be https://www.example2.be https://www.example
 ### File
 
 It is possible to pass in a *CSV* file.
-Example:
-``
-https://www.example.be\n
-https://www.example2.be
-``
+Note please don't add headers.
 
 Then via:
 ``
@@ -31,7 +27,7 @@ ddev axe_a11y urls.csv
 
 The file must be inside of ".ddev/axe_a11y/config"
 
-It will only open one CSV though but all urls will be checked of course.
+It will only open one HTML report though but all urls will be checked of course.
 
 ## Previous reports.
 

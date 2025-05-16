@@ -36,3 +36,11 @@ It will only open one CSV though but all urls will be checked of course.
 ## Previous reports.
 
 All reports will be in your ".ddev/axe_a11y/results" folder.
+
+
+## FAQ
+
+### How do I test a whole site
+
+Convert your sitemap to CSV via: https://www.bulkgpt.ai/tools/xmltocsv
+And then jut use that CSV to test your whole website.

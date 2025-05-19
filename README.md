@@ -1,3 +1,6 @@
+# Screenshot
+![image](https://github.com/user-attachments/assets/2358373f-5255-4137-a328-2e4115643560)
+
 # DDEV add-on Axe accessiblity checker
 
 Run Axe accessibility checker on a URL.
@@ -39,4 +42,4 @@ All reports will be in your ".ddev/axe_a11y/results" folder.
 ### How do I test a whole site
 
 Convert your sitemap to CSV via: https://www.bulkgpt.ai/tools/xmltocsv
-And then jut use that CSV to test your whole website.
+And then just use that CSV to test your whole website.

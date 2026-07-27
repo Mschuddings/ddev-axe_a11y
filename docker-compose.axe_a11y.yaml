@@ -9,6 +9,7 @@ services:
     # name convention used in the main docker-compose.yml file.
     container_name: ddev-${DDEV_SITENAME}-axe-a11y
     image: mschuddings/axe_a11y:latest
+    platform: linux/amd64
     pull_policy: always
     volumes:
       -  ../reports/axe_a11y/results:/home/results

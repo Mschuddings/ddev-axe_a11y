@@ -10,6 +10,7 @@ services:
     container_name: ddev-${DDEV_SITENAME}-axe-a11y
     image: mschuddings/axe_a11y:latest
     pull_policy: always
+    platform: linux/amd64
     volumes:
       -  ../reports/axe_a11y/results:/home/results
       - ./axe_a11y/config:/home/config

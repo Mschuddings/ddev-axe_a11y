@@ -1,25 +1,106 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #ddev-generated
-## Description: Run axe_a11y checker
-## Usage: axe_a11y [args]
+## Description: Run the Axe accessibility checker on one or more URLs
+## Usage: axe_a11y [options] <url|list.csv> [url...]
 ## Example: "ddev axe_a11y https://www.example.be/"
 ## ExecRaw: true
 
-output=$(docker exec ddev-${DDEV_PROJECT}-axe-a11y node axe.js "$@")
-SUBSTRING=`echo $output | cut -d "@" -f2 | cut -d "@" -f1`
+set -eu -o pipefail
 
-case $OSTYPE in
-  linux-gnu)
-    if [ -n "$WSL_DISTRO_NAME" ]; then
-      explorer.exe "$(wslpath -w $PWD/reports/axe_a11y/results/${SUBSTRING})"
+CONTAINER="ddev-${DDEV_PROJECT}-axe-a11y"
+RESULTS_DIR="${DDEV_APPROOT}/reports/axe_a11y/results"
+CONFIG_DIR="${DDEV_APPROOT}/.ddev/axe_a11y/config"
+
+usage() {
+  cat >&2 <<USAGE
+Usage: ddev axe_a11y [options] <url|list.csv> [url...]
+
+  ddev axe_a11y https://www.example.be/
+  ddev axe_a11y https://www.example.be/ https://www.example.be/contact
+  ddev axe_a11y list.csv
+  ddev axe_a11y --fail-on=serious --baseline=a11y-baseline.json list.csv
+
+A .csv or .txt list holds one URL per line and must sit in
+${CONFIG_DIR}
+
+Options:
+  --fail-on=<impact>   Exit non-zero on minor|moderate|serious|critical findings
+  --baseline=<file>    Accept the findings in this file, report only regressions
+  --update-baseline    Record the current findings in --baseline
+  --no-open            Do not open the report in a browser
+
+Reports are written to ${RESULTS_DIR}
+USAGE
+}
+
+# Opening the report is this command's job, not the scanner's, so --no-open is
+# filtered out here instead of being passed on.
+open_report=true
+args=()
+for arg in "$@"; do
+  if [ "${arg}" = "--no-open" ]; then
+    open_report=false
+  else
+    args+=("${arg}")
+  fi
+done
+
+if [ "${#args[@]}" -eq 0 ]; then
+  usage
+  exit 1
+fi
+
+# Without this check a stopped container produced an empty report name, and the
+# command went on to open the results directory instead of a report.
+if [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER}" 2>/dev/null || true)" != "true" ]; then
+  echo "The ${CONTAINER} container is not running. Run 'ddev restart' and try again." >&2
+  exit 1
+fi
+
+log="$(mktemp)"
+trap 'rm -f "${log}"' EXIT
+
+# The scanner's own exit code matters: 1 means findings at or above --fail-on,
+# 2 means the run failed. It is preserved as this command's exit code so it can
+# be used in a script.
+set +e
+docker exec "${CONTAINER}" node axe.js "${args[@]}" 2>&1 | tee "${log}"
+status="${PIPESTATUS[0]}"
+set -e
+
+# The scanner marks the HTML report in its output as @report-....html@.
+report="$(sed -n 's/.*@\(report-[^@]*\.html\)@.*/\1/p' "${log}" | tail -n 1)"
+
+if [ -z "${report}" ]; then
+  echo "No report was produced; see the output above." >&2
+  exit "${status:-1}"
+fi
+
+report_path="${RESULTS_DIR}/${report}"
+echo "Report: ${report_path}"
+
+if [ "${open_report}" != "true" ]; then
+  exit "${status}"
+fi
+
+case "${OSTYPE}" in
+  linux-gnu*)
+    if [ -n "${WSL_DISTRO_NAME:-}" ]; then
+      # explorer.exe returns a non-zero status even when it succeeds.
+      explorer.exe "$(wslpath -w "${report_path}")" || true
     else
-      xdg-open ${DDEV_APPROOT}/reports/axe_a11y/results/${SUBSTRING}
+      xdg-open "${report_path}" >/dev/null 2>&1 || true
     fi
     ;;
-  "darwin"*)
-    open ${DDEV_APPROOT}/reports/axe_a11y/results/${SUBSTRING}
+  darwin*)
+    open "${report_path}" || true
     ;;
-  "win*"* | "msys"*)
-    start ${DDEV_APPROOT}/reports/axe_a11y/results/${SUBSTRING}
+  msys* | cygwin* | win*)
+    start "" "${report_path}" || true
+    ;;
+  *)
+    echo "Open the report manually: ${report_path}" >&2
     ;;
 esac
+
+exit "${status}"

@@ -1,0 +1,7 @@
+#ddev-generated
+hooks:
+  # Runs before the containers start, so a freshly pulled image is used by this
+  # very start. See axe_a11y-refresh-image.sh for why this replaced
+  # pull_policy: always.
+  pre-start:
+    - exec-host: ".ddev/axe_a11y-refresh-image.sh"

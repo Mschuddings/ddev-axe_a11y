@@ -8,11 +8,21 @@ services:
     # This is the name of the container. It is recommended to follow the same
     # name convention used in the main docker-compose.yml file.
     container_name: ddev-${DDEV_SITENAME}-axe-a11y
-    image: mschuddings/axe_a11y:latest
-    pull_policy: always
-    platform: linux/amd64
+    image: registry.gitlab.com/mschudders/accessibility_checker:latest
+    # The image is published for linux/amd64 and linux/arm64, so there is no
+    # platform pin here and arm64 hosts run it natively instead of emulated.
+    #
+    # pull_policy is 'missing' rather than 'always': 'always' needed the network
+    # on every ddev start and broke offline work. Freshness is handled by the
+    # pre-start hook in config.axe_a11y.yaml, which pulls at most once a day per
+    # machine and then lets this start use the new image.
+    pull_policy: missing
+    # Runs as the host user so reports and baselines land in the project owned
+    # by that user. The image used to chmod -R 777 its mounted directories on
+    # every start to work around files being created as root.
+    user: "$DDEV_UID:$DDEV_GID"
     volumes:
-      -  ../reports/axe_a11y/results:/home/results
+      - ../reports/axe_a11y/results:/home/results
       - ./axe_a11y/config:/home/config
       - "ddev-global-cache:/mnt/ddev-global-cache"
     # These labels ensure this service is discoverable by ddev.

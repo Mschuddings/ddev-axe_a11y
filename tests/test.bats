@@ -16,7 +16,7 @@ setup() {
   set -eu -o pipefail
 
   # Override this variable for your add-on:
-  export GITHUB_REPO=ddev/ddev-axe_a11y
+  export GITHUB_REPO=Mschuddings/ddev-axe_a11y
 
   TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
   export BATS_LIB_PATH="${BATS_LIB_PATH}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
@@ -39,17 +39,39 @@ setup() {
 }
 
 health_checks() {
-  # Do something useful here that verifies the add-on
-
-  # You can check for specific information in headers:
-  # run curl -sfI https://${PROJNAME}.ddev.site
-  # assert_output --partial "HTTP/2 200"
-  # assert_output --partial "test_header"
-
-  # Or check if some command gives expected output:
-  DDEV_DEBUG=true run ddev launch
+  # Scans the project's own site rather than an external one: it needs no
+  # outbound network, and it exercises the ddev-router link and the mkcert
+  # certificate, which is not trusted inside the scanner container.
+  run ddev axe_a11y --no-open "https://${PROJNAME}.ddev.site"
   assert_success
-  assert_output --partial "FULLURL https://${PROJNAME}.ddev.site"
+  assert_output --partial "Report: "
+
+  # A report is only useful if it reached the host, in both formats.
+  run bash -c "ls ${TESTDIR}/reports/axe_a11y/results/report-*.html"
+  assert_success
+  run bash -c "ls ${TESTDIR}/reports/axe_a11y/results/report-*.json"
+  assert_success
+
+  # The report has to be a complete document, not a truncated one.
+  run bash -c "grep -l '</html>' ${TESTDIR}/reports/axe_a11y/results/report-*.html"
+  assert_success
+
+  # Written as the host user, not as root: that is what running the container
+  # with user: $DDEV_UID:$DDEV_GID is for.
+  run bash -c "find ${TESTDIR}/reports/axe_a11y/results -name 'report-*.html' -user $(id -u) | wc -l"
+  assert_success
+  refute_output "0"
+
+  # Called with no arguments it must explain itself and fail, not open the
+  # results directory.
+  run ddev axe_a11y
+  assert_failure
+  assert_output --partial "Usage:"
+
+  # The hook that keeps the scanner image current must be installed and runnable.
+  assert_file_executable "${TESTDIR}/.ddev/axe_a11y-refresh-image.sh"
+  run grep -q "pre-start" "${TESTDIR}/.ddev/config.axe_a11y.yaml"
+  assert_success
 }
 
 teardown() {

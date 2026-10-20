@@ -25,7 +25,11 @@ setup() {
   bats_load_library bats-support
 
   export DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." >/dev/null 2>&1 && pwd)"
-  export PROJNAME="test-$(basename "${GITHUB_REPO}")"
+  # A DDEV project name has to be a valid hostname, and this repository's name
+  # contains an underscore, which is not allowed in one. Deriving PROJNAME
+  # verbatim made ddev config fail in setup with "is not a valid project name",
+  # so every run failed before reaching a single assertion.
+  export PROJNAME="test-$(basename "${GITHUB_REPO}" | tr '_' '-')"
   mkdir -p ~/tmp
   export TESTDIR=$(mktemp -d ~/tmp/${PROJNAME}.XXXXXX)
   export DDEV_NONINTERACTIVE=true
